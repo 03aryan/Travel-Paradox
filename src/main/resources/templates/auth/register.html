@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Travel Paradox</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+</head>
+<body>
+    <div class="travel-hero">
+        <h1>Travel Paradox</h1>
+        <p class="lead">Your Gateway to Amazing Destinations</p>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h3 class="mb-0">Create Your Account</h3>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                        <form th:action="@{/register}" th:object="${user}" method="post">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" th:field="*{username}"
+                                       placeholder="Enter your username" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" th:field="*{email}"
+                                       placeholder="Enter your email" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" th:field="*{password}"
+                                       placeholder="Enter your password" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" th:field="*{confirmPassword}"
+                                       placeholder="Confirm your password" required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="role" class="form-label">Account Type</label>
+                                <select class="form-select" id="role" th:field="*{role}" required>
+                                    <option value="">Select your account type</option>
+                                    <option th:each="role : ${roles}" th:value="${role}"
+                                            th:text="${role == T(com.example.travel.model.UserRole).USER ? 'Guest (Book Hotels)' : 'Hotel Provider (Manage Hotels)'}"></option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-success w-100 mb-3">Create Account</button>
+                        </form>
+
+                        <div class="text-center">
+                            <p class="mb-0">Already have an account?
+                                <a th:href="@{/login}" class="text-decoration-none" style="color: #d32f2f; font-weight: 500;">
+                                    Sign in here
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

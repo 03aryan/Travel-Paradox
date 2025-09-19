@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${hotel.name} + ' - Travel Paradox'">Hotel Details - Travel Paradox</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="#" th:href="@{/dashboard}">Travel Paradox</a>
+
+            <button class="navbar-toggler" type="button" onclick="toggleNavbar()">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link" th:href="@{/hotels/search}">Search Hotels</a>
+                    <a class="nav-link" th:href="@{/bookings/my-bookings}" sec:authorize="hasRole('USER')">My Bookings</a>
+                    <a class="nav-link" th:href="@{/hotels/manage}" sec:authorize="hasRole('PROVIDER')">Manage Hotels</a>
+                    <form th:action="@{/logout}" method="post" class="d-inline ms-2">
+                        <button type="submit" class="btn btn-outline-light">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0" th:text="${hotel.name}">Hotel Name</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h4>Hotel Information</h4>
+                                <p class="mb-2">
+                                    <strong>Location:</strong> <span th:text="${hotel.location}">Location</span>
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Provider:</strong> <span th:text="${hotel.serviceProvider.username}">Provider</span>
+                                </p>
+                                <p class="mb-3">
+                                    <strong>Price per Night:</strong>
+                                    <span style="color: #d32f2f; font-weight: bold; font-size: 1.2em;">
+                                        ₹<span th:text="${hotel.pricePerNight}">Price</span>
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="card" style="border: 2px solid #fbc02d; background-color: #fff9c4;">
+                                    <div class="card-body">
+                                        <h5 style="color: #d32f2f;">Book Now</h5>
+                                        <div style="font-size: 1.5rem; color: #d32f2f; font-weight: bold;">
+                                            ₹<span th:text="${hotel.pricePerNight}">Price</span>
+                                        </div>
+                                        <small class="text-muted">per night</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <div class="d-flex gap-3 flex-wrap">
+                                <a th:href="@{/bookings/create/{id}(id=${hotel.id})}"
+                                   class="btn btn-success flex-fill"
+                                   sec:authorize="hasRole('USER')">
+                                    Book This Hotel
+                                </a>
+                                <a th:href="@{/hotels/search}" class="btn btn-secondary flex-fill">
+                                    Back to Search
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hotel Description Section -->
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h5>About This Hotel</h5>
+                        <p>Experience comfort and luxury at <span th:text="${hotel.name}">this hotel</span>
+                           located in <span th:text="${hotel.location}">prime location</span>.
+                           Perfect for both business and leisure travelers.</p>
+
+                        <h6 class="mt-3">Features:</h6>
+                        <ul>
+                            <li>Prime location in <span th:text="${hotel.location}">city center</span></li>
+                            <li>Competitive pricing at ₹<span th:text="${hotel.pricePerNight}">price</span> per night</li>
+                            <li>Managed by experienced provider: <span th:text="${hotel.serviceProvider.username}">provider</span></li>
+                            <li>Easy booking process</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleNavbar() {
+            const navbar = document.getElementById('navbarNav');
+            navbar.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>

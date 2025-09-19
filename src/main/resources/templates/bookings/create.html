@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Booking - Travel Paradox</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="#" th:href="@{/dashboard}">Travel Paradox</a>
+
+            <button class="navbar-toggler" type="button" onclick="toggleNavbar()">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link" th:href="@{/hotels/search}">Search Hotels</a>
+                    <a class="nav-link" th:href="@{/bookings/my-bookings}">My Bookings</a>
+                    <form th:action="@{/logout}" method="post" class="d-inline ms-2">
+                        <button type="submit" class="btn btn-outline-light">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <!-- Hotel Information Summary -->
+                <div class="booking-summary">
+                    <h4 style="color: #d32f2f; margin-bottom: 1rem;">Hotel Information</h4>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 th:text="${hotel.name}" style="color: #333333;">Hotel Name</h5>
+                            <p class="mb-1">
+                                <strong>Location:</strong> <span th:text="${hotel.location}">Location</span>
+                            </p>
+                            <p class="mb-1">
+                                <strong>Provider:</strong> <span th:text="${hotel.serviceProvider.username}">Provider</span>
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div style="color: #d32f2f; font-weight: bold; font-size: 1.5rem;">
+                                ₹<span th:text="${hotel.pricePerNight}">Price</span>
+                            </div>
+                            <small class="text-muted">per night</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h3 class="mb-0">Book Your Stay</h3>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                        <p class="text-muted mb-4">Select your check-in and check-out dates below.</p>
+
+                        <form th:action="@{/bookings/create/{hotelId}(hotelId=${hotel.id})}" th:object="${booking}" method="post">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="checkInDate" class="form-label">Check-in Date</label>
+                                    <input type="date" class="form-control" id="checkInDate" th:field="*{checkInDate}"
+                                           th:min="${T(java.time.LocalDate).now()}" required>
+                                    <div class="form-text">Select your arrival date</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="checkOutDate" class="form-label">Check-out Date</label>
+                                    <input type="date" class="form-control" id="checkOutDate" th:field="*{checkOutDate}"
+                                           th:min="${T(java.time.LocalDate).now().plusDays(1)}" required>
+                                    <div class="form-text">Select your departure date</div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 d-flex gap-3">
+                                <button type="submit" class="btn btn-success flex-fill">
+                                    Confirm Booking
+                                </button>
+                                <a th:href="@{/hotels/search}" class="btn btn-secondary flex-fill">
+                                    Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleNavbar() {
+            const navbar = document.getElementById('navbarNav');
+            navbar.classList.toggle('show');
+        }
+
+        // Auto-update checkout date when checkin date changes
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('checkInDate').addEventListener('change', function() {
+                const checkInDate = new Date(this.value);
+                const checkOutDate = new Date(checkInDate);
+                checkOutDate.setDate(checkOutDate.getDate() + 1);
+
+                const checkOutInput = document.getElementById('checkOutDate');
+                checkOutInput.min = checkOutDate.toISOString().split('T')[0];
+
+                if (checkOutInput.value && new Date(checkOutInput.value) <= checkInDate) {
+                    checkOutInput.value = checkOutDate.toISOString().split('T')[0];
+                }
+            });
+        });
+    </script>
+</body>
+</html>

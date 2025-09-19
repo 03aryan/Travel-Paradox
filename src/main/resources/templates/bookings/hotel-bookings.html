@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Bookings - Travel Paradox</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="#" th:href="@{/dashboard}">Travel Paradox</a>
+
+            <button class="navbar-toggler" type="button" onclick="toggleNavbar()">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link" th:href="@{/hotels/manage}">Manage Hotels</a>
+                    <a class="nav-link active" th:href="@{/bookings/hotel-bookings}">Hotel Bookings</a>
+                    <a class="nav-link" th:href="@{/hotels/search}">Browse Hotels</a>
+                    <form th:action="@{/logout}" method="post" class="d-inline ms-2">
+                        <button type="submit" class="btn btn-outline-light">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>All Hotel Bookings</h2>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <p class="text-muted mb-0">
+                <span th:text="${#lists.size(bookings)}">0</span> booking(s) across all your hotels
+            </p>
+            <a th:href="@{/hotels/manage}" class="btn btn-success">
+                Manage Hotels
+            </a>
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="d-none d-md-block" th:if="${!#lists.isEmpty(bookings)}">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Hotel</th>
+                            <th>Guest</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Price/Night</th>
+                            <th>Status</th>
+                            <th>Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="booking : ${bookings}">
+                            <td>
+                                <strong th:text="${booking.hotel.name}">Hotel Name</strong><br>
+                                <small class="text-muted" th:text="${booking.hotel.location}">Location</small>
+                            </td>
+                            <td th:text="${booking.user.username}">Guest Name</td>
+                            <td th:text="${#temporals.format(booking.checkInDate, 'MMM dd, yyyy')}">Check-in</td>
+                            <td th:text="${#temporals.format(booking.checkOutDate, 'MMM dd, yyyy')}">Check-out</td>
+                            <td>
+                                <span style="color: #d32f2f; font-weight: bold;">
+                                    ₹<span th:text="${booking.hotel.pricePerNight}">Price</span>
+                                </span>
+                            </td>
+                            <td>
+                                <span th:if="${booking.checkInDate.isBefore(T(java.time.LocalDate).now())}"
+                                      class="badge" style="background-color: #333333; color: white;">Completed</span>
+                                <span th:if="${booking.checkInDate.isEqual(T(java.time.LocalDate).now())}"
+                                      class="badge" style="background-color: #fbc02d; color: #333333;">Today</span>
+                                <span th:if="${booking.checkInDate.isAfter(T(java.time.LocalDate).now())}"
+                                      class="badge" style="background-color: #d32f2f; color: white;">Upcoming</span>
+                            </td>
+                            <td>
+                      <span style="color: #d32f2f; font-weight: bold;"
+                          th:text="'₹' + ${booking.hotel.pricePerNight * T(java.time.temporal.ChronoUnit).DAYS.between(booking.checkInDate, booking.checkOutDate)}">
+                                    Total Revenue
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="d-md-none hotel-grid" th:if="${!#lists.isEmpty(bookings)}">
+            <div th:each="booking : ${bookings}" class="card">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${booking.hotel.name}">Hotel Name</h5>
+                    <div class="card-text">
+                        <p class="mb-2">
+                            <strong>Location:</strong> <span th:text="${booking.hotel.location}">Location</span>
+                        </p>
+                        <p class="mb-2">
+                            <strong>Guest:</strong> <span th:text="${booking.user.username}">Guest Name</span>
+                        </p>
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <strong>Check-in:</strong><br>
+                                <span th:text="${#temporals.format(booking.checkInDate, 'MMM dd, yyyy')}">Check-in</span>
+                            </div>
+                            <div class="col-6">
+                                <strong>Check-out:</strong><br>
+                                <span th:text="${#temporals.format(booking.checkOutDate, 'MMM dd, yyyy')}">Check-out</span>
+                            </div>
+                        </div>
+                        <p class="mb-2">
+                            <strong>Price per Night:</strong>
+                            <span style="color: #d32f2f; font-weight: bold;">
+                                ₹<span th:text="${booking.hotel.pricePerNight}">Price</span>
+                            </span>
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span th:if="${booking.checkInDate.isBefore(T(java.time.LocalDate).now())}"
+                                  class="badge" style="background-color: #333333; color: white;">Completed</span>
+                            <span th:if="${booking.checkInDate.isEqual(T(java.time.LocalDate).now())}"
+                                  class="badge" style="background-color: #fbc02d; color: #333333;">Today</span>
+                            <span th:if="${booking.checkInDate.isAfter(T(java.time.LocalDate).now())}"
+                                  class="badge" style="background-color: #d32f2f; color: white;">Upcoming</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(bookings)}" class="alert alert-info text-center mt-4">
+            <h4>No Bookings Yet</h4>
+            <p>No guests have booked your hotels yet. Keep your hotels listed and attractively priced!</p>
+            <a th:href="@{/hotels/manage}" class="btn btn-success">Manage Your Hotels</a>
+        </div>
+    </div>
+
+    <script>
+        function toggleNavbar() {
+            const navbar = document.getElementById('navbarNav');
+            navbar.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Hotels - Travel Paradox</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="#" th:href="@{/dashboard}">Travel Paradox</a>
+
+            <button class="navbar-toggler" type="button" onclick="toggleNavbar()">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link" th:href="@{/hotels/add}">Add Hotel</a>
+                    <a class="nav-link" th:href="@{/bookings/hotel-bookings}">View Bookings</a>
+                    <a class="nav-link" th:href="@{/hotels/search}">Browse Hotels</a>
+                    <form th:action="@{/logout}" method="post" class="d-inline ms-2">
+                        <button type="submit" class="btn btn-outline-light">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Manage Your Hotels</h2>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <p class="text-muted mb-0">
+                <span th:text="${#lists.size(hotels)}">0</span> hotel(s) in your portfolio
+            </p>
+            <a th:href="@{/hotels/add}" class="btn btn-success">
+                ➕ Add New Hotel
+            </a>
+        </div>
+
+        <div class="hotel-grid" th:if="${!#lists.isEmpty(hotels)}">
+            <div th:each="hotel : ${hotels}" class="card">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${hotel.name}">Hotel Name</h5>
+                    <div class="card-text">
+                        <p class="mb-2">
+                            <strong style="color: #333333;">📍 Location:</strong>
+                            <span th:text="${hotel.location}">Location</span>
+                        </p>
+                        <p class="mb-3">
+                            <strong style="color: #333333;">💰 Price per Night:</strong>
+                            <span style="color: #d32f2f; font-weight: bold; font-size: 1.1em;">
+                                ₹<span th:text="${hotel.pricePerNight}">Price</span>
+                            </span>
+                        </p>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a th:href="@{/hotels/edit/{id}(id=${hotel.id})}" class="btn btn-warning flex-fill">
+                                ✏️ Edit
+                            </a>
+                            <a th:href="@{/bookings/hotel/{id}(id=${hotel.id})}" class="btn btn-info flex-fill">
+                                📅 Bookings
+                            </a>
+                            <form th:action="@{/hotels/delete/{id}(id=${hotel.id})}" method="post" class="flex-fill"
+                                  onsubmit="return confirm('Are you sure you want to delete this hotel? This action cannot be undone.')">
+                                <button type="submit" class="btn btn-danger w-100">🗑️ Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(hotels)}" class="alert alert-info text-center mt-4">
+            <h4>No Hotels Yet</h4>
+            <p>You haven't added any hotels to your portfolio yet.</p>
+            <a th:href="@{/hotels/add}" class="btn btn-success">Add Your First Hotel</a>
+        </div>
+    </div>
+
+    <script>
+        function toggleNavbar() {
+            const navbar = document.getElementById('navbarNav');
+            navbar.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>

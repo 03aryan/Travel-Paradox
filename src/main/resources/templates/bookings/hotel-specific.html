@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${hotel.name} + ' Bookings - Travel Paradox'">Hotel Bookings - Travel Paradox</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Dynamic Hotel Background Container -->
+    <div class="page-background" style="background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.6) 50%, rgba(0, 0, 0, 0.4) 100%); background-size: cover; background-position: center; background-attachment: fixed; background-repeat: no-repeat;">
+        <div class="background-overlay"></div>
+        <div class="background-pattern"></div>
+    </div>
+
+    <!-- Floating Elements -->
+    <div class="floating-elements">
+        <div class="floating-element floating-element-1"></div>
+        <div class="floating-element floating-element-2"></div>
+        <div class="floating-element floating-element-3"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="#" th:href="@{/dashboard}">
+                <i class="fas fa-plane"></i> Travel Paradox
+            </a>
+
+            <div class="d-flex align-items-center">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                </button>
+                
+                <button class="navbar-toggler" type="button" onclick="toggleNavbar()">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+
+            <div class="navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link text-white" th:href="@{/hotels/manage}">
+                        <i class="fas fa-hotel"></i> Manage Hotels
+                    </a>
+                    <a class="nav-link text-white" th:href="@{/bookings/hotel-bookings}">
+                        <i class="fas fa-calendar-alt"></i> All Bookings
+                    </a>
+                    <a class="nav-link text-white" th:href="@{/hotels/search}">
+                        <i class="fas fa-search"></i> Browse Hotels
+                    </a>
+                    <form th:action="@{/logout}" method="post" class="d-inline ms-2">
+                        <button type="submit" class="btn btn-outline-light">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Hotel Information Header -->
+        <div class="gradient-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-3">
+                        <i class="fas fa-hotel"></i> <span th:text="${hotel.name}">Hotel Name</span>
+                    </h1>
+                    <div class="mb-2">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <strong>Location:</strong> <span th:text="${hotel.location}">Location</span>
+                    </div>
+                    <div class="mb-0">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <strong>Price per Night:</strong>
+                        <span class="fs-5 fw-bold">₹<span th:text="${hotel.pricePerNight}">Price</span></span>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a th:href="@{/hotels/edit/{id}(id=${hotel.id})}" class="btn btn-warning-modern btn-modern">
+                        <i class="fas fa-edit"></i> Edit Hotel
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-gradient mb-0">
+                <i class="fas fa-calendar-check"></i> Booking Management
+            </h2>
+            <a th:href="@{/bookings/hotel-bookings}" class="btn btn-primary-modern btn-modern">
+                <i class="fas fa-list"></i> View All Bookings
+            </a>
+        </div>
+
+        <!-- Revenue Summary -->
+        <div th:if="${!#lists.isEmpty(bookings)}" class="row mb-4">
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <i class="fas fa-chart-line fa-2x mb-3" style="color: var(--text-accent);"></i>
+                    <h6 class="text-muted">Total Bookings</h6>
+                    <span class="stats-number" th:text="${#lists.size(bookings)}">0</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <i class="fas fa-check-circle fa-2x mb-3" style="color: #28a745;"></i>
+                    <h6 class="text-muted">Completed Bookings</h6>
+                    <span class="stats-number warning" th:text="${#lists.size(pastBookings)}">0</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <i class="fas fa-clock fa-2x mb-3" style="color: #ffc107;"></i>
+                    <h6 class="text-muted">Upcoming Bookings</h6>
+                    <span class="stats-number danger" th:text="${#lists.size(upcomingBookings)}">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="d-none d-md-block booking-table" th:if="${!#lists.isEmpty(bookings)}">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-user"></i> Guest</th>
+                            <th><i class="fas fa-calendar-alt"></i> Check-in</th>
+                            <th><i class="fas fa-calendar-alt"></i> Check-out</th>
+                            <th><i class="fas fa-moon"></i> Duration</th>
+                            <th><i class="fas fa-rupee-sign"></i> Revenue</th>
+                            <th><i class="fas fa-info-circle"></i> Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="booking : ${bookings}">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle me-3">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div>
+                                        <strong th:text="${booking.user.username}">Guest Name</strong><br>
+                                        <small class="text-muted" th:text="${booking.user.email}">Guest Email</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td th:text="${#temporals.format(booking.checkInDate, 'MMM dd, yyyy')}">Check-in</td>
+                            <td th:text="${#temporals.format(booking.checkOutDate, 'MMM dd, yyyy')}">Check-out</td>
+                            <td>
+                                <span class="badge badge-info badge-modern" 
+                                      th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(booking.checkInDate, booking.checkOutDate)} + ' nights'">Duration</span>
+                            </td>
+                            <td>
+                                <span class="fw-bold fs-5" style="color: var(--text-accent);"
+                                      th:text="'₹' + ${booking.hotel.pricePerNight * T(java.time.temporal.ChronoUnit).DAYS.between(booking.checkInDate, booking.checkOutDate)}">
+                                    Revenue
+                                </span>
+                            </td>
+                            <td>
+                                <span th:if="${booking.checkInDate.isBefore(T(java.time.LocalDate).now())}"
+                                      class="badge badge-success badge-modern">
+                                    <i class="fas fa-check"></i> Completed
+                                </span>
+                                <span th:if="${booking.checkInDate.isEqual(T(java.time.LocalDate).now())}"
+                                      class="badge badge-warning badge-modern">
+                                    <i class="fas fa-calendar-day"></i> Today
+                                </span>
+                                <span th:if="${booking.checkInDate.isAfter(T(java.time.LocalDate).now())}"
+                                      class="badge badge-danger badge-modern">
+                                    <i class="fas fa-clock"></i> Upcoming
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="d-md-none" th:if="${!#lists.isEmpty(bookings)}">
+            <div th:each="booking, iterStat : ${bookings}" class="mobile-card" th:style="'animation-delay: ' + (${iterStat.index} * 0.1) + 's'">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-circle me-3">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1" th:text="${booking.user.username}">Guest Name</h6>
+                            <small class="text-muted" th:text="${booking.user.email}">Guest Email</small>
+                        </div>
+                    </div>
+                    <span th:if="${booking.checkInDate.isBefore(T(java.time.LocalDate).now())}"
+                          class="badge badge-success badge-modern">
+                        <i class="fas fa-check"></i> Completed
+                    </span>
+                    <span th:if="${booking.checkInDate.isEqual(T(java.time.LocalDate).now())}"
+                          class="badge badge-warning badge-modern">
+                        <i class="fas fa-calendar-day"></i> Today
+                    </span>
+                    <span th:if="${booking.checkInDate.isAfter(T(java.time.LocalDate).now())}"
+                          class="badge badge-danger badge-modern">
+                        <i class="fas fa-clock"></i> Upcoming
+                    </span>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <div class="text-center p-2" style="background: var(--bg-tertiary); border-radius: 8px;">
+                            <i class="fas fa-calendar-alt text-muted"></i>
+                            <div class="small text-muted">Check-in</div>
+                            <div class="fw-bold" th:text="${#temporals.format(booking.checkInDate, 'MMM dd')}">Date</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center p-2" style="background: var(--bg-tertiary); border-radius: 8px;">
+                            <i class="fas fa-calendar-alt text-muted"></i>
+                            <div class="small text-muted">Check-out</div>
+                            <div class="fw-bold" th:text="${#temporals.format(booking.checkOutDate, 'MMM dd')}">Date</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Duration</small>
+                        <div class="fw-bold" 
+                             th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(booking.checkInDate, booking.checkOutDate)} + ' nights'">
+                            Duration
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted">Total Revenue</small>
+                        <div class="fw-bold fs-5" style="color: var(--text-accent);"
+                             th:text="'₹' + ${booking.hotel.pricePerNight * T(java.time.temporal.ChronoUnit).DAYS.between(booking.checkInDate, booking.checkOutDate)}">
+                            Revenue
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(bookings)}" class="no-bookings-card">
+            <i class="fas fa-calendar-times fa-4x mb-4" style="color: var(--text-secondary);"></i>
+            <h4>No Bookings Yet</h4>
+            <p class="text-muted mb-4">This hotel hasn't received any bookings yet. Consider reviewing your pricing or location visibility.</p>
+            <div class="d-flex gap-2 justify-content-center flex-wrap">
+                <a th:href="@{/hotels/edit/{id}(id=${hotel.id})}" class="btn btn-warning-modern btn-modern">
+                    <i class="fas fa-edit"></i> Edit Hotel Details
+                </a>
+                <a th:href="@{/hotels/manage}" class="btn btn-primary-modern btn-modern">
+                    <i class="fas fa-arrow-left"></i> Back to Management
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* ================================================
+           DYNAMIC HOTEL BACKGROUND SYSTEM
+           ================================================ */
+        
+        /* Main Background Container - Uses Hotel's Own Image */
+        .page-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -3;
+            /* Background image is set dynamically via Thymeleaf using hotel.img */
+        }
+
+        /* Background Overlay for Readability */
+        .background-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -2;
+        }
+
+        /* Subtle Pattern Overlay */
+        .background-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M20 20c0 0 0-8 0-8s8 0 8 0 0 8 0 8-8 0-8 0zM0 20c0 0 0-8 0-8s8 0 8 0 0 8 0 8-8 0-8 0zM0 0c0 0 0-8 0-8s8 0 8 0 0 8 0 8-8 0-8 0zM20 0c0 0 0-8 0-8s8 0 8 0 0 8 0 8-8 0-8 0z'/%3E%3C/g%3E%3C/svg%3E");
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Dark Theme Adjustments */
+        [data-theme="dark"] .background-overlay {
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        /* ================================================
+           GLASS MORPHISM UI COMPONENTS
+           ================================================ */
+
+        /* Enhanced Body Styling */
+        body {
+            position: relative;
+            min-height: 100vh;
+            background: transparent !important;
+        }
+
+        /* Glass Effect Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.15) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Glass Effect Header */
+        .gradient-header {
+            background: rgba(255, 255, 255, 0.25) !important;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .gradient-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(102, 126, 234, 0.2) 0%, 
+                rgba(118, 75, 162, 0.15) 50%,
+                rgba(64, 196, 255, 0.2) 100%
+            );
+            z-index: -1;
+        }
+
+        /* Glass Effect Cards */
+        .stats-card,
+        .booking-table,
+        .mobile-card,
+        .no-bookings-card {
+            background: rgba(255, 255, 255, 0.2) !important;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ================================================
+           DARK THEME GLASS EFFECTS
+           ================================================ */
+
+        [data-theme="dark"] .navbar {
+            background: rgba(0, 0, 0, 0.4) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        [data-theme="dark"] .gradient-header {
+            background: rgba(0, 0, 0, 0.5) !important;
+        }
+
+        [data-theme="dark"] .stats-card,
+        [data-theme="dark"] .booking-table,
+        [data-theme="dark"] .mobile-card,
+        [data-theme="dark"] .no-bookings-card {
+            background: rgba(0, 0, 0, 0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ================================================
+           FLOATING ANIMATION ELEMENTS
+           ================================================ */
+
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: floatAround 20s infinite linear;
+        }
+
+        .floating-element-1 {
+            width: 120px;
+            height: 120px;
+            top: 15%;
+            left: 10%;
+            background: rgba(102, 126, 234, 0.15);
+            animation-duration: 25s;
+            animation-delay: 0s;
+        }
+
+        .floating-element-2 {
+            width: 80px;
+            height: 80px;
+            top: 60%;
+            right: 15%;
+            background: rgba(64, 196, 255, 0.15);
+            animation-duration: 30s;
+            animation-delay: -5s;
+        }
+
+        .floating-element-3 {
+            width: 100px;
+            height: 100px;
+            bottom: 20%;
+            left: 20%;
+            background: rgba(118, 75, 162, 0.15);
+            animation-duration: 35s;
+            animation-delay: -10s;
+        }
+
+        @keyframes floatAround {
+            0% { transform: translateY(0px) translateX(0px) rotate(0deg); opacity: 0.3; }
+            25% { transform: translateY(-30px) translateX(15px) rotate(90deg); opacity: 0.6; }
+            50% { transform: translateY(-15px) translateX(-15px) rotate(180deg); opacity: 0.4; }
+            75% { transform: translateY(20px) translateX(8px) rotate(270deg); opacity: 0.7; }
+            100% { transform: translateY(0px) translateX(0px) rotate(360deg); opacity: 0.3; }
+        }
+
+        /* ================================================
+           ENHANCED PARALLAX EFFECTS
+           ================================================ */
+
+        .page-background {
+            transform: translate3d(0, 0, 0);
+        }
+
+        /* Container positioning */
+        .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ================================================
+           AVATAR AND GRADIENT TEXT COMPONENTS
+           ================================================ */
+
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--info-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .avatar-circle:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .text-gradient {
+            background: var(--info-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        /* ================================================
+           RESPONSIVE DESIGN ENHANCEMENTS
+           ================================================ */
+
+        @media (max-width: 768px) {
+            .page-background {
+                background-attachment: scroll !important;
+            }
+            
+            .floating-elements {
+                display: none; /* Hide floating elements on mobile for performance */
+            }
+        }
+
+        /* ================================================
+           BOOKING SECTION DARK STYLE OVERRIDES
+           Applies to the bookings list/table and mobile cards
+           ================================================ */
+        .booking-table,
+        .mobile-card {
+            background: rgba(0, 0, 0, 0.75) !important;
+            color: #ffffff !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+        }
+
+        /* Make foreground text bold and bright inside booking sections */
+        .booking-table *,
+        .mobile-card * {
+            color: #ffffff !important;
+            font-weight: 600;
+        }
+
+        /* Table specifics for readability */
+        .booking-table .table {
+            color: #ffffff;
+        }
+        .booking-table .table thead th {
+            background-color: rgba(255, 255, 255, 0.08);
+            font-weight: 700;
+        }
+        .booking-table .table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+
+        /* Keep badges readable on dark background */
+        .badge.badge-modern {
+            color: #ffffff !important;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* ================================================
+           HIGH CONTRAST PAGE-WIDE READABILITY OVERRIDES
+           ================================================ */
+        body {
+            background-color: #0f1115 !important;
+            color: #f2f3f5 !important;
+        }
+
+        .page-background {
+            background-color: #0f1115 !important;
+        }
+        .background-overlay {
+            background: rgba(0, 0, 0, 0.65) !important;
+        }
+        .background-pattern { opacity: 0.04; }
+
+        /* Navbar and nav items */
+        .navbar {
+            background-color: #111418 !important;
+            border-bottom-color: #1f232a !important;
+        }
+        .navbar .navbar-brand,
+        .navbar .nav-link,
+        .navbar .btn {
+            color: #ffffff !important;
+            font-weight: 700;
+        }
+        .navbar .nav-link:hover { color: #e5e7eb !important; }
+
+        /* Header and cards */
+        .gradient-header,
+        .stats-card,
+        .no-bookings-card {
+            background-color: #1b1f24 !important;
+            border-color: #2a2f37 !important;
+        }
+        .text-muted { color: #cbd5e1 !important; }
+        h1, h2, h3, h4, h5, h6 { color: #ffffff !important; font-weight: 800; }
+
+        /* Table contrast */
+        .booking-table .table { color: #eef2f6 !important; }
+        .booking-table .table thead th {
+            background-color: #242a31 !important;
+            color: #ffffff !important;
+            border-bottom-color: #2f3540 !important;
+        }
+        .booking-table .table tbody td { border-top-color: #27303a !important; }
+        .booking-table .table tbody tr:hover { background-color: rgba(255, 255, 255, 0.05) !important; }
+
+        /* Badges on dark */
+        .badge.badge-success { background-color: #2e7d32 !important; color: #ffffff !important; }
+        .badge.badge-warning { background-color: #fbbf24 !important; color: #1f2937 !important; }
+        .badge.badge-danger  { background-color: #dc2626 !important; color: #ffffff !important; }
+
+        /* Buttons readable and bold */
+        .btn,
+        .btn-modern,
+        .btn-primary, .btn-success, .btn-info, .btn-warning, .btn-secondary, .btn-danger,
+        .btn-primary-modern, .btn-warning-modern, .btn-primary-modern.btn-modern {
+            font-weight: 800 !important;
+        }
+        .btn-primary-modern { background-color: #2563eb !important; border-color: #2563eb !important; color: #ffffff !important; }
+        .btn-warning-modern { background-color: #f59e0b !important; border-color: #f59e0b !important; color: #111827 !important; }
+        .btn-info { background-color: #06b6d4 !important; border-color: #06b6d4 !important; color: #082f49 !important; }
+    </style>
+
+    <script>
+        // Theme management
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            const currentTheme = html.getAttribute('data-theme');
+            
+            if (currentTheme === 'light') {
+                html.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                html.setAttribute('data-theme', 'light');
+                themeIcon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            html.setAttribute('data-theme', savedTheme);
+            themeIcon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        function toggleNavbar() {
+            const navbar = document.getElementById('navbarNav');
+            navbar.classList.toggle('show');
+        }
+
+        // Smooth scroll animation observer
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTheme();
+            
+            // Observe all animated elements
+            document.querySelectorAll('.animated-card, .stats-card, .mobile-card').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                observer.observe(el);
+            });
+            
+            // Add loading animation to stats numbers
+            setTimeout(() => {
+                document.querySelectorAll('.stats-number').forEach((el, index) => {
+                    const finalValue = parseInt(el.textContent);
+                    let currentValue = 0;
+                    const increment = Math.ceil(finalValue / 50);
+                    
+                    const counter = setInterval(() => {
+                        currentValue += increment;
+                        if (currentValue >= finalValue) {
+                            currentValue = finalValue;
+                            clearInterval(counter);
+                        }
+                        el.textContent = currentValue;
+                    }, 30);
+                });
+            }, 500);
+
+            // Create dynamic background particles
+            createBackgroundParticles();
+            
+            // Add parallax effect on scroll
+            window.addEventListener('scroll', () => {
+                const scrolled = window.pageYOffset;
+                const background = document.querySelector('.page-background');
+                if (background) {
+                    background.style.transform = `translateY(${scrolled * 0.5}px)`;
+                }
+            });
+        });
+
+        // Create dynamic particles for enhanced background
+        function createBackgroundParticles() {
+            const particleContainer = document.querySelector('.floating-elements');
+            
+            // Create additional floating particles
+            for (let i = 0; i < 5; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.width = Math.random() * 40 + 10 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.background = `rgba(102, 126, 234, ${Math.random() * 0.1 + 0.05})`;
+                particle.style.borderRadius = '50%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animation = `floatAround ${Math.random() * 20 + 15}s infinite linear`;
+                particle.style.animationDelay = Math.random() * -20 + 's';
+                
+                particleContainer.appendChild(particle);
+            }
+        }
+
+        // Add hover effects to table rows
+        document.querySelectorAll('.table tbody tr').forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.02)';
+            });
+            
+            row.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
