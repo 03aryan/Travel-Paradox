@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,8 +18,8 @@
             <div class="navbar-collapse" id="navbarNav">
                 <div class="navbar-nav ms-auto">
                     <a class="nav-link active" th:href="@{/hotels/search}">Search Hotels</a>
-                    <a class="nav-link" th:href="@{/bookings/my-bookings}" sec:authorize="hasRole('USER')">My Bookings</a>
-                    <a class="nav-link" th:href="@{/hotels/manage}" sec:authorize="hasRole('PROVIDER')">Manage Hotels</a>
+                    <a class="nav-link" th:href="@{/bookings/my-bookings}">My Bookings</a>
+                    <a class="nav-link" th:href="@{/hotels/manage}">Manage Hotels</a>
                     <form th:action="@{/logout}" method="post" class="d-inline ms-2">
                         <button type="submit" class="btn btn-outline-light">Logout</button>
                     </form>
@@ -72,8 +72,7 @@
                         </p>
                         <div class="d-flex gap-2 flex-wrap">
                             <a th:href="@{/hotels/view/{id}(id=${hotel.id})}" class="btn btn-info flex-fill">View Details</a>
-                            <a th:href="@{/bookings/create/{id}(id=${hotel.id})}" class="btn btn-success flex-fill"
-                               sec:authorize="hasRole('USER')">Book Now</a>
+                            <a th:href="@{/bookings/create/{id}(id=${hotel.id})}" class="btn btn-success flex-fill">Book Now</a>
                         </div>
                     </div>
                 </div>

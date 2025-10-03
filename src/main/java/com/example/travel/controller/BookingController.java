@@ -18,6 +18,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -32,13 +36,22 @@ public class BookingController {
 
     // USER endpoints
     @GetMapping("/create/{hotelId}")
-    public String showBookingForm(@PathVariable Long hotelId, Authentication authentication, Model model) {
+    public String showBookingForm(@PathVariable Long hotelId,
+                                  Authentication authentication,
+                                  Model model,
+                                  RedirectAttributes redirectAttributes) {
         try {
             User currentUser = getCurrentUser(authentication);
-            validateUserRole(currentUser, UserRole.USER);
 
             Hotel hotel = hotelService.findById(hotelId)
                     .orElseThrow(() -> new HotelNotFoundException(hotelId));
+
+            if (hotel.getServiceProvider() != null && hotel.getServiceProvider().getId().equals(currentUser.getId())) {
+                redirectAttributes.addFlashAttribute("error", "You cannot book your own hotel.");
+                return redirectForRole(currentUser.getRole());
+            }
+
+            validateUserRole(currentUser, UserRole.USER);
 
             model.addAttribute("hotel", hotel);
             model.addAttribute("booking", new BookingDto());
@@ -49,11 +62,13 @@ public class BookingController {
 
             return "bookings/create";
         } catch (HotelNotFoundException e) {
+            redirectAttributes.addFlashAttribute("error", "Hotel not found");
             return "redirect:/hotels/search";
         } catch (UnauthorizedAccessException e) {
-            return "redirect:/hotels/search";
+            redirectAttributes.addFlashAttribute("error", "Please log in with a traveler account to book hotels.");
+            return "redirect:/login";
         } catch (Exception e) {
-            model.addAttribute("error", "Unable to load booking form: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Unable to load booking form: " + e.getMessage());
             return "redirect:/hotels/search";
         }
     }
@@ -68,11 +83,17 @@ public class BookingController {
 
         try {
             User currentUser = getCurrentUser(authentication);
+            Hotel hotel = hotelService.findById(hotelId)
+                    .orElseThrow(() -> new HotelNotFoundException(hotelId));
+
+            if (hotel.getServiceProvider() != null && hotel.getServiceProvider().getId().equals(currentUser.getId())) {
+                redirectAttributes.addFlashAttribute("error", "You cannot book your own hotel.");
+                return redirectForRole(currentUser.getRole());
+            }
+
             validateUserRole(currentUser, UserRole.USER);
 
             if (bindingResult.hasErrors()) {
-                Hotel hotel = hotelService.findById(hotelId)
-                        .orElseThrow(() -> new HotelNotFoundException(hotelId));
                 model.addAttribute("hotel", hotel);
                 return "bookings/create";
             }
@@ -96,7 +117,8 @@ public class BookingController {
                 return "redirect:/hotels/search";
             }
         } catch (UnauthorizedAccessException e) {
-            return "redirect:/hotels/search";
+            redirectAttributes.addFlashAttribute("error", "Please log in with a traveler account to book hotels.");
+            return "redirect:/login";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Unable to create booking: " + e.getMessage());
             return "redirect:/hotels/search";
@@ -104,7 +126,7 @@ public class BookingController {
     }
 
     @GetMapping("/my-bookings")
-    public String listMyBookings(Authentication authentication, Model model) {
+    public String listMyBookings(Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
         try {
             User currentUser = getCurrentUser(authentication);
             validateUserRole(currentUser, UserRole.USER);
@@ -113,9 +135,10 @@ public class BookingController {
             model.addAttribute("bookings", bookings);
             return "bookings/my-bookings";
         } catch (UnauthorizedAccessException e) {
-            return "redirect:/hotels/search";
+            redirectAttributes.addFlashAttribute("error", "Please log in with a traveler account to view your bookings.");
+            return "redirect:/login";
         } catch (Exception e) {
-            model.addAttribute("error", "Unable to load bookings: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Unable to load bookings: " + e.getMessage());
             return "redirect:/hotels/search";
         }
     }
@@ -136,7 +159,8 @@ public class BookingController {
         } catch (BookingCancellationException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (UnauthorizedAccessException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Please log in with a traveler account to manage bookings.");
+            return "redirect:/login";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error cancelling booking: " + e.getMessage());
         }
@@ -146,7 +170,7 @@ public class BookingController {
 
     // PROVIDER endpoints
     @GetMapping("/hotel-bookings")
-    public String listHotelBookings(Authentication authentication, Model model) {
+    public String listHotelBookings(Authentication authentication, Model model, RedirectAttributes redirectAttributes) {
         try {
             User currentUser = getCurrentUser(authentication);
             validateUserRole(currentUser, UserRole.PROVIDER);
@@ -155,9 +179,10 @@ public class BookingController {
             model.addAttribute("bookings", bookings);
             return "bookings/hotel-bookings";
         } catch (UnauthorizedAccessException e) {
-            return "redirect:/hotels/search";
+            redirectAttributes.addFlashAttribute("error", "Please log in with a provider account to view these bookings.");
+            return "redirect:/login";
         } catch (Exception e) {
-            model.addAttribute("error", "Unable to load bookings: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Unable to load bookings: " + e.getMessage());
             return "redirect:/hotels/search";
         }
     }
@@ -165,7 +190,8 @@ public class BookingController {
     @GetMapping("/hotel/{hotelId}")
     public String listBookingsForHotel(@PathVariable Long hotelId,
                                       Authentication authentication,
-                                      Model model) {
+                                      Model model,
+                                      RedirectAttributes redirectAttributes) {
 
         try {
             User currentUser = getCurrentUser(authentication);
@@ -196,16 +222,22 @@ public class BookingController {
             model.addAttribute("upcomingBookings", upcomingBookings);
             return "bookings/hotel-specific";
         } catch (HotelNotFoundException e) {
+            redirectAttributes.addFlashAttribute("error", "Hotel not found");
             return "redirect:/hotels/manage";
         } catch (UnauthorizedAccessException e) {
-            return "redirect:/hotels/manage";
+            redirectAttributes.addFlashAttribute("error", "Please log in with a provider account to view these bookings.");
+            return "redirect:/login";
         } catch (Exception e) {
-            model.addAttribute("error", "Unable to load hotel bookings: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Unable to load hotel bookings: " + e.getMessage());
             return "redirect:/hotels/manage";
         }
     }
 
     private User getCurrentUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw UnauthorizedAccessException.forAction("access bookings without logging in");
+        }
+
         try {
             String username = authentication.getName();
             return userService.findByUsername(username)
@@ -221,13 +253,32 @@ public class BookingController {
         }
     }
 
+    private String redirectForRole(UserRole role) {
+        if (role == UserRole.PROVIDER) {
+            return "redirect:/hotels/manage";
+        }
+        return "redirect:/hotels/search";
+    }
+
     // DTO class for booking form
     public static class BookingDto {
         @DateTimeFormat(pattern = "yyyy-MM-dd")
+        @NotNull(message = "Please select a check-in date")
+        @FutureOrPresent(message = "Check-in date cannot be in the past")
         private LocalDate checkInDate;
 
         @DateTimeFormat(pattern = "yyyy-MM-dd")
+        @NotNull(message = "Please select a check-out date")
+        @Future(message = "Check-out date must be in the future")
         private LocalDate checkOutDate;
+
+        @AssertTrue(message = "Check-out date must be after check-in date")
+        public boolean isCheckoutAfterCheckin() {
+            if (checkInDate == null || checkOutDate == null) {
+                return true;
+            }
+            return checkOutDate.isAfter(checkInDate);
+        }
 
         // Getters and setters
         public LocalDate getCheckInDate() { return checkInDate; }

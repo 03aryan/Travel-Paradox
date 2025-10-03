@@ -72,6 +72,42 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Should register provider with business details")
+    void shouldRegisterProviderWithBusinessDetails() {
+        when(userRepository.existsByUsername(anyString())).thenReturn(false);
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
+
+        User savedProvider = new User();
+        savedProvider.setId(10L);
+        savedProvider.setUsername("provider01");
+        savedProvider.setEmail("provider@example.com");
+        savedProvider.setRole(UserRole.PROVIDER);
+        savedProvider.setFullName("Provider One");
+        savedProvider.setBusinessName("Provider Resorts");
+        savedProvider.setContactNumber("+1 555 123 4567");
+
+        when(userRepository.save(any(User.class))).thenReturn(savedProvider);
+
+        User result = userService.registerUser(
+                "provider01",
+                "provider@example.com",
+                "Complex#Pass1",
+                UserRole.PROVIDER,
+                "Provider One",
+                "+1 555 123 4567",
+                "Provider Resorts"
+        );
+
+        assertThat(result.getRole()).isEqualTo(UserRole.PROVIDER);
+        assertThat(result.getFullName()).isEqualTo("Provider One");
+        assertThat(result.getBusinessName()).isEqualTo("Provider Resorts");
+        assertThat(result.getContactNumber()).isEqualTo("+1 555 123 4567");
+
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
     @DisplayName("Test Case 2: Should throw exception when username already exists")
     void shouldThrowExceptionWhenUsernameExists() {
         // Given

@@ -15,6 +15,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -223,8 +228,17 @@ public class HotelController {
 
     // DTO class for hotel form
     public static class HotelDto {
+        @NotBlank(message = "Hotel name is required")
+        @Size(min = 3, max = 100, message = "Hotel name must be between 3 and 100 characters")
         private String name;
+
+        @NotBlank(message = "Location is required")
+        @Size(min = 2, max = 150, message = "Location must be between 2 and 150 characters")
         private String location;
+
+        @NotNull(message = "Price per night is required")
+        @DecimalMin(value = "0.0", inclusive = false, message = "Price per night must be greater than 0")
+        @Digits(integer = 8, fraction = 2, message = "Price must be a valid amount with up to 2 decimal places")
         private BigDecimal pricePerNight;
 
         // Getters and setters

@@ -22,38 +22,69 @@
                     <div class="card-body">
                         <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
+                        <div class="alert alert-info" role="alert">
+                            <strong>Guests:</strong> If you're booking trips, use the
+                            <a th:href="@{/register/user}" class="text-decoration-none" style="color: #1976d2; font-weight: 500;">traveler signup page</a> instead.
+                            <br>
+                            <strong>Providers:</strong> Complete the form below so we can verify your business before you list hotels.
+                        </div>
+
                         <form th:action="@{/register}" th:object="${user}" method="post">
+                            <input type="hidden" th:field="*{role}" value="PROVIDER" />
+                            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                                <ul class="mb-0">
+                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                                </ul>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="fullName" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="fullName" th:field="*{fullName}"
+                                       th:classappend="${#fields.hasErrors('fullName')} ? ' is-invalid'" placeholder="Enter your full name" required>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+                            </div>
+
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username</label>
                                 <input type="text" class="form-control" id="username" th:field="*{username}"
-                                       placeholder="Enter your username" required>
+                                       th:classappend="${#fields.hasErrors('username')} ? ' is-invalid'" placeholder="Create a username" required>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
                             </div>
 
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email Address</label>
                                 <input type="email" class="form-control" id="email" th:field="*{email}"
-                                       placeholder="Enter your email" required>
+                                       th:classappend="${#fields.hasErrors('email')} ? ' is-invalid'" placeholder="Enter your email" required>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="contactNumber" class="form-label">Business Contact Number</label>
+                                <input type="tel" class="form-control" id="contactNumber" th:field="*{contactNumber}"
+                                       th:classappend="${#fields.hasErrors('contactNumber')} ? ' is-invalid'" placeholder="e.g. +1 555 123 4567" required>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('contactNumber')}" th:errors="*{contactNumber}"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="businessName" class="form-label">Hotel / Business Name</label>
+                                <input type="text" class="form-control" id="businessName" th:field="*{businessName}"
+                                       th:classappend="${#fields.hasErrors('businessName')} ? ' is-invalid'" placeholder="Enter your hotel or company name" required>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('businessName')}" th:errors="*{businessName}"></div>
                             </div>
 
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password</label>
                                 <input type="password" class="form-control" id="password" th:field="*{password}"
-                                       placeholder="Enter your password" required>
+                                       th:classappend="${#fields.hasErrors('password')} ? ' is-invalid'" placeholder="Enter your password" required>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                                <div class="form-text">Must be at least 8 characters with one uppercase letter and one special character (@, $, !, %, *, ?, &, #).</div>
                             </div>
 
                             <div class="mb-3">
                                 <label for="confirmPassword" class="form-label">Confirm Password</label>
                                 <input type="password" class="form-control" id="confirmPassword" th:field="*{confirmPassword}"
-                                       placeholder="Confirm your password" required>
-                            </div>
-
-                            <div class="mb-4">
-                                <label for="role" class="form-label">Account Type</label>
-                                <select class="form-select" id="role" th:field="*{role}" required>
-                                    <option value="">Select your account type</option>
-                                    <option th:each="role : ${roles}" th:value="${role}"
-                                            th:text="${role == T(com.example.travel.model.UserRole).USER ? 'Guest (Book Hotels)' : 'Hotel Provider (Manage Hotels)'}"></option>
-                                </select>
+                                       th:classappend="${#fields.hasErrors('confirmPassword')} ? ' is-invalid'" placeholder="Confirm your password" required>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
                             </div>
 
                             <button type="submit" class="btn btn-success w-100 mb-3">Create Account</button>

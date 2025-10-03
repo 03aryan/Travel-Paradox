@@ -59,8 +59,16 @@ class AuthControllerTest {
         mockMvc.perform(get("/register"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("auth/register"))
-                .andExpect(model().attributeExists("user"))
-                .andExpect(model().attributeExists("roles"));
+                .andExpect(model().attributeExists("user"));
+    }
+
+    @Test
+    @DisplayName("Should show traveler registration page")
+    void shouldShowTravelerRegistrationPage() throws Exception {
+        mockMvc.perform(get("/register/user"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("auth/register-user"))
+                .andExpect(model().attributeExists("user"));
     }
 
     @Test

@@ -18,6 +18,11 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public User registerUser(String username, String email, String password, UserRole role) {
+        return registerUser(username, email, password, role, null, null, null);
+    }
+
+    public User registerUser(String username, String email, String password, UserRole role,
+                             String fullName, String contactNumber, String businessName) {
         if (userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("Username already exists");
         }
@@ -30,6 +35,9 @@ public class UserService {
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole(role);
+        user.setFullName(fullName);
+        user.setContactNumber(contactNumber);
+        user.setBusinessName(businessName);
         return userRepository.save(user);
     }
 

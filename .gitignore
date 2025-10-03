@@ -31,34 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-### Database & Logs ###
-*.log
-logs/
-*.db
-*.sqlite
-*.sqlite3
-
-### Environment Variables & Sensitive Data ###
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-application-local.properties
-application-dev.properties
-application-prod.properties
-
-### OS Files ###
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-### Temporary Files ###
-*.tmp
-*.temp
-*.original

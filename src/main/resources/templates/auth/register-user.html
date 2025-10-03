@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Travel Paradox</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet">
+</head>
+<body>
+    <div class="travel-hero">
+        <h1>Travel Paradox</h1>
+        <p class="lead">Create your traveler account in seconds</p>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h3 class="mb-0">Sign Up as Traveler</h3>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                        <form th:action="@{/register/user}" th:object="${user}" method="post">
+                            <input type="hidden" th:field="*{fullName}" value="" />
+                            <input type="hidden" th:field="*{businessName}" value="" />
+                            <input type="hidden" th:field="*{contactNumber}" value="" />
+                            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                                <ul class="mb-0">
+                                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                                </ul>
+                            </div>
+
+                            <input type="hidden" th:field="*{role}" value="USER" />
+
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" th:field="*{username}"
+                                       th:classappend="${#fields.hasErrors('username')} ? ' is-invalid'" placeholder="Pick a unique username" required>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" th:field="*{email}"
+                                       th:classappend="${#fields.hasErrors('email')} ? ' is-invalid'" placeholder="We'll send booking confirmations here" required>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                                <div class="text-danger small mt-1 d-none" id="emailFormatHint">Please enter a valid email address (for example, name@example.com).</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" th:field="*{password}"
+                                       th:classappend="${#fields.hasErrors('password')} ? ' is-invalid'" placeholder="Create a secure password" required>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                                <div class="form-text">Must be at least 8 characters with one uppercase letter and one special character (@, $, !, %, *, ?, &, #).</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" th:field="*{confirmPassword}"
+                                       th:classappend="${#fields.hasErrors('confirmPassword')} ? ' is-invalid'" placeholder="Retype your password" required>
+                                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success w-100 mb-3">Create Traveler Account</button>
+                        </form>
+
+                        <div class="text-center">
+                            <p class="mb-0">Already using Travel Paradox?
+                                <a th:href="@{/login}" class="text-decoration-none" style="color: #d32f2f; font-weight: 500;">
+                                    Sign in instead
+                                </a>
+                            </p>
+                            <p class="mt-3 mb-0">
+                                <small>
+                                    Want to list hotels?
+                                    <a th:href="@{/register}" class="text-decoration-none" style="color: #1976d2; font-weight: 500;">
+                                        Register as a provider
+                                    </a>
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const emailInput = document.getElementById('email');
+            const emailHint = document.getElementById('emailFormatHint');
+            if (!emailInput || !emailHint) {
+                return;
+            }
+
+            const toggleHint = () => {
+                if (emailInput.validity.valid || emailInput.value.trim() === '') {
+                    emailHint.classList.add('d-none');
+                    emailInput.classList.remove('is-invalid');
+                } else {
+                    emailHint.classList.remove('d-none');
+                    emailInput.classList.add('is-invalid');
+                }
+            };
+
+            emailInput.addEventListener('input', toggleHint);
+            emailInput.addEventListener('invalid', function (event) {
+                event.preventDefault();
+                toggleHint();
+            });
+        });
+    </script>
+</body>
+</html>

@@ -119,8 +119,8 @@ public class HotelService {
         if (hasMaxPrice) {
             return hotelRepository.findByPricePerNightLessThanEqual(maxPrice);
         }
-        
-        return hotelRepository.findAll();
+
+        return hotelRepository.findAllWithServiceProvider();
     }
 
     public Optional<Hotel> findById(Long id) {

@@ -31,6 +31,15 @@ public class User {
     @Column(nullable = false)
     private UserRole role;
 
+    @Column(length = 100)
+    private String fullName;
+
+    @Column(length = 150)
+    private String businessName;
+
+    @Column(length = 25)
+    private String contactNumber;
+
     // Relationships
     @OneToMany(mappedBy = "serviceProvider", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Hotel> hotels;

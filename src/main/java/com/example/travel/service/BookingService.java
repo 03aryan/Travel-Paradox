@@ -27,6 +27,10 @@ public class BookingService {
             Hotel hotel = hotelService.findById(hotelId)
                     .orElseThrow(() -> new HotelNotFoundException(hotelId));
 
+            if (hotel.getServiceProvider() != null && hotel.getServiceProvider().getId().equals(user.getId())) {
+                throw new InvalidBookingException("You cannot book your own hotel.");
+            }
+
             // Check for date conflicts - this is for hotel management, not user restriction
             validateDateAvailability(hotel, checkInDate, checkOutDate);
 
